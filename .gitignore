@@ -1,0 +1,25 @@
+# --- Python (backend) ---
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- Node (frontend) ---
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+
+# --- Environment files (real secrets — keep only the .example templates tracked) ---
+.env
+.env.local
+.env.*.local
+!.env.example
+!.env.local.example
+
+# --- Vector store data ---
+chroma_db/
+
+# --- OS / editor cruft ---
+.DS_Store
+*.log

@@ -1,0 +1,30 @@
+fastapi==0.136.3
+uvicorn[standard]==0.49.0
+python-multipart==0.0.32
+langchain==1.3.11
+langchain-community==0.4.2
+langchain-groq==1.1.3
+langchain-text-splitters==1.1.2
+chromadb==1.5.9
+pypdf==6.14.2
+sentence-transformers==5.6.0
+python-dotenv==1.2.2
+pydantic==2.13.4
+sqlalchemy==2.0.51
+psycopg2-binary==2.9.12
+supabase==2.31.0
+
+# Test-only dependencies (tests/)
+pytest==9.1.1
+pytest-asyncio==1.4.0
+httpx==0.28.1
+reportlab==5.0.0
+
+# Evaluation-only dependencies (evaluation/) — pinned to 0.2.15 deliberately:
+# ragas>=0.3.0 added a hard dependency on scikit-network (for an unrelated
+# knowledge-graph test-generation feature), which has no prebuilt wheel for
+# Python 3.14 and fails to build from source without MSVC Build Tools. See
+# the compatibility-shim comment at the top of evaluation/run_eval.py for
+# the one other version issue this pin runs into and how it's worked around.
+ragas==0.2.15
+datasets==5.0.0

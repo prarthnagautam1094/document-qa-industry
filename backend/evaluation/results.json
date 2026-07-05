@@ -1,0 +1,245 @@
+{
+  "questions": [
+    {
+      "question": "How many paid leaves are full-time employees entitled to per year?",
+      "answer": "Full-time employees are entitled to 24 paid leaves per calendar year.",
+      "ground_truth": "Full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month. They may carry forward a maximum of 10 unused leaves to the next year.",
+      "contexts": [
+        "BrightWave Technologies Pvt. Ltd.\nEmployee Handbook\n1. Company Overview\nBrightWave Technologies is a software company founded in 2018, headquartered in Bengaluru, India.\nThe company builds AI-powered products for customer support automation. BrightWave currently has\n240 employees across three offices: Bengaluru, Pune, and a remote engineering team distributed\nacross India.\n2. Leave Policy\nAll full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month.\nEmployees may carry forward a maximum of 10 unused leaves to the next year. Sick leave is capped\nat 8 days per year and does not require prior approval, but a doctor's note is needed for absences\nlonger than 3 consecutive days.\n3. Maternity and Paternity Leave\nFemale employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.\nMale employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,",
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR"
+      ],
+      "reference_context": "All full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month. Employees may carry forward a maximum of 10 unused leaves to the next year.",
+      "sources": [
+        "sample.pdf (p. 1)",
+        "sample.pdf (p. 2)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9616877013097259,
+        "context_precision": 0.9999999999,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "How many days of paid maternity leave are female employees entitled to?",
+      "answer": "Female employees are entitled to 26 weeks of paid maternity leave. Since there are 7 days in a week, this is equivalent to 26 x 7 = 182 days of paid maternity leave.",
+      "ground_truth": "Female employees are entitled to 26 weeks of paid maternity leave, as per the Maternity Benefit Act.",
+      "contexts": [
+        "BrightWave Technologies Pvt. Ltd.\nEmployee Handbook\n1. Company Overview\nBrightWave Technologies is a software company founded in 2018, headquartered in Bengaluru, India.\nThe company builds AI-powered products for customer support automation. BrightWave currently has\n240 employees across three offices: Bengaluru, Pune, and a remote engineering team distributed\nacross India.\n2. Leave Policy\nAll full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month.\nEmployees may carry forward a maximum of 10 unused leaves to the next year. Sick leave is capped\nat 8 days per year and does not require prior approval, but a doctor's note is needed for absences\nlonger than 3 consecutive days.\n3. Maternity and Paternity Leave\nFemale employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.\nMale employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,",
+        "New employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,\nemployees receive a confirmation letter and become eligible for full benefits."
+      ],
+      "reference_context": "Female employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.",
+      "sources": [
+        "sample.pdf (p. 1)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 0.75,
+        "answer_relevancy": 0.9999999999999338,
+        "context_precision": 0.9999999999,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "What is the standard notice period for resignation?",
+      "answer": "The standard notice period for resignation is 60 days for confirmed employees and 15 days for employees on probation.",
+      "ground_truth": "The standard notice period is 60 days for confirmed employees and 15 days for employees on probation.",
+      "contexts": [
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR",
+        "New employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,\nemployees receive a confirmation letter and become eligible for full benefits.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,"
+      ],
+      "reference_context": "The standard notice period is 60 days for confirmed employees and 15 days for employees on probation.",
+      "sources": [
+        "sample.pdf (p. 2)",
+        "sample.pdf (p. 1)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9999999999999606,
+        "context_precision": 0.9999999999,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "How many days per week can employees work from home without prior approval?",
+      "answer": "Employees may work from home up to 2 days per week without prior approval.",
+      "ground_truth": "Employees may work from home up to 2 days per week without prior approval. Fully remote arrangements require manager and HR approval.",
+      "contexts": [
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,",
+        "BrightWave Technologies Pvt. Ltd.\nEmployee Handbook\n1. Company Overview\nBrightWave Technologies is a software company founded in 2018, headquartered in Bengaluru, India.\nThe company builds AI-powered products for customer support automation. BrightWave currently has\n240 employees across three offices: Bengaluru, Pune, and a remote engineering team distributed\nacross India.\n2. Leave Policy\nAll full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month.\nEmployees may carry forward a maximum of 10 unused leaves to the next year. Sick leave is capped\nat 8 days per year and does not require prior approval, but a doctor's note is needed for absences\nlonger than 3 consecutive days.\n3. Maternity and Paternity Leave\nFemale employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.\nMale employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.",
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR"
+      ],
+      "reference_context": "Employees may work from home up to 2 days per week without prior approval. Fully remote arrangements require manager and HR approval.",
+      "sources": [
+        "sample.pdf (p. 1)",
+        "sample.pdf (p. 2)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": NaN,
+        "answer_relevancy": 0.9999999999999997,
+        "context_precision": 0.9999999999,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "How long is the probation period for new employees?",
+      "answer": "The probation period for new employees is 3 months from their date of joining.",
+      "ground_truth": "The probation period for new employees is 3 months from their date of joining.",
+      "contexts": [
+        "New employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,\nemployees receive a confirmation letter and become eligible for full benefits.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,",
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR"
+      ],
+      "reference_context": "New employees undergo a probation period of 3 months from their date of joining.",
+      "sources": [
+        "sample.pdf (p. 1)",
+        "sample.pdf (p. 2)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.9801851356817991,
+        "context_precision": 0.99999999995,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "What happens to unused leave when an employee resigns?",
+      "answer": "Unused leaves at the time of resignation will be encashed along with the final settlement.",
+      "ground_truth": "Unused leaves at the time of resignation are encashed along with the final settlement.",
+      "contexts": [
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR",
+        "New employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,\nemployees receive a confirmation letter and become eligible for full benefits.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,"
+      ],
+      "reference_context": "Unused leaves at the time of resignation will be encashed along with the final settlement.",
+      "sources": [
+        "sample.pdf (p. 2)",
+        "sample.pdf (p. 1)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.8107863834071797,
+        "context_precision": 0.9999999999,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "What about paternity leave specifically?",
+      "answer": "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months of the child's birth.",
+      "ground_truth": "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months of the child's birth.",
+      "contexts": [
+        "BrightWave Technologies Pvt. Ltd.\nEmployee Handbook\n1. Company Overview\nBrightWave Technologies is a software company founded in 2018, headquartered in Bengaluru, India.\nThe company builds AI-powered products for customer support automation. BrightWave currently has\n240 employees across three offices: Bengaluru, Pune, and a remote engineering team distributed\nacross India.\n2. Leave Policy\nAll full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month.\nEmployees may carry forward a maximum of 10 unused leaves to the next year. Sick leave is capped\nat 8 days per year and does not require prior approval, but a doctor's note is needed for absences\nlonger than 3 consecutive days.\n3. Maternity and Paternity Leave\nFemale employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.\nMale employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.",
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,"
+      ],
+      "reference_context": "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months of the child's birth.",
+      "sources": [
+        "sample.pdf (p. 1)",
+        "sample.pdf (p. 2)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": NaN,
+        "answer_relevancy": 0.7353500199223234,
+        "context_precision": 0.8333333332916666,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "How much notice do I need to give if I'm still on probation?",
+      "answer": "If you're still on probation, you need to give 15 days' notice to terminate your employment.",
+      "ground_truth": "You need to give 15 days' notice if you are still on probation.",
+      "contexts": [
+        "7. Resignation and Notice Period\nEmployees who wish to resign must submit a written resignation to their manager and HR. The\nstandard notice period is 60 days for confirmed employees and 15 days for employees on probation.\nUnused leaves at the time of resignation will be encashed along with the final settlement.\n8. Code of Conduct\nEmployees are expected to maintain professionalism, respect colleagues, and protect confidential\ncompany information. Any violation of the code of conduct, including harassment or data misuse, may\nresult in disciplinary action up to and including termination.\n9. IT and Equipment Policy\nEvery employee is issued a laptop and necessary software licenses upon joining. Employees must\nreturn all company equipment within 5 days of their last working day. Loss or damage to company\nequipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR",
+        "New employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,\nemployees receive a confirmation letter and become eligible for full benefits.",
+        "Male employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.\n4. Salary and Compensation\nSalaries are disbursed on the last working day of every month via direct bank transfer. Annual\nperformance reviews are conducted every April, and salary revisions, if applicable, are effective from\nMay 1st. Employees are eligible for an annual bonus of up to 10% of their base salary, subject to\nindividual and company performance.\n5. Work From Home Policy\nEmployees may work from home up to 2 days per week without prior approval. Fully remote\narrangements require manager and HR approval. All remote employees must be available on Slack\nand video calls between 10 AM and 5 PM IST.\n6. Probation Period\nNew employees undergo a probation period of 3 months from their date of joining. During probation,\neither party may terminate employment with 15 days' notice. Upon successful completion of probation,"
+      ],
+      "reference_context": "The standard notice period is 60 days for confirmed employees and 15 days for employees on probation.",
+      "sources": [
+        "sample.pdf (p. 2)",
+        "sample.pdf (p. 1)"
+      ],
+      "num_chunks_retrieved": 3,
+      "is_off_topic": false,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.706881685836214,
+        "context_precision": 0.9999999999666667,
+        "context_recall": 1.0
+      }
+    },
+    {
+      "question": "What is the capital of France?",
+      "answer": "I couldn't find relevant information in the uploaded documents for this question.",
+      "ground_truth": "I couldn't find relevant information in the uploaded documents for this question.",
+      "contexts": [],
+      "reference_context": null,
+      "sources": [],
+      "num_chunks_retrieved": 0,
+      "is_off_topic": true,
+      "scores": {
+        "faithfulness": 0.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 0.0
+      }
+    },
+    {
+      "question": "What is BrightWave's current stock price?",
+      "answer": "I don't know based on the provided document. The document only provides information about the company's overview, leave policy, and other HR-related details, but does not mention the company's stock price.",
+      "ground_truth": "I couldn't find relevant information in the uploaded documents for this question.",
+      "contexts": [
+        "BrightWave Technologies Pvt. Ltd.\nEmployee Handbook\n1. Company Overview\nBrightWave Technologies is a software company founded in 2018, headquartered in Bengaluru, India.\nThe company builds AI-powered products for customer support automation. BrightWave currently has\n240 employees across three offices: Bengaluru, Pune, and a remote engineering team distributed\nacross India.\n2. Leave Policy\nAll full-time employees are entitled to 24 paid leaves per calendar year, credited at 2 leaves per month.\nEmployees may carry forward a maximum of 10 unused leaves to the next year. Sick leave is capped\nat 8 days per year and does not require prior approval, but a doctor's note is needed for absences\nlonger than 3 consecutive days.\n3. Maternity and Paternity Leave\nFemale employees are entitled to 26 weeks of paid maternity leave as per the Maternity Benefit Act.\nMale employees are entitled to 15 days of paid paternity leave, which must be availed within 6 months\nof the child's birth.",
+        "equipment due to negligence may be charged to the employee.\n10. Contact Information\nFor any HR-related queries, employees can reach out to hr@brightwavetech.com or contact the HR\nhelpdesk at extension 204. The HR office is open Monday to Friday, 9 AM to 6 PM."
+      ],
+      "reference_context": null,
+      "sources": [
+        "sample.pdf (p. 1)",
+        "sample.pdf (p. 2)"
+      ],
+      "num_chunks_retrieved": 2,
+      "is_off_topic": true,
+      "scores": {
+        "faithfulness": 1.0,
+        "answer_relevancy": 0.0,
+        "context_precision": 0.0,
+        "context_recall": 1.0
+      }
+    }
+  ],
+  "averages": {
+    "all": {
+      "faithfulness": 0.84375,
+      "answer_relevancy": 0.7194890926157136,
+      "context_precision": 0.7833333332708333,
+      "context_recall": 0.9
+    },
+    "on_topic": {
+      "faithfulness": 0.9583333333333334,
+      "answer_relevancy": 0.899361365769642,
+      "context_precision": 0.9791666665885417,
+      "context_recall": 1.0
+    },
+    "off_topic": {
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.0,
+      "context_precision": 0.0,
+      "context_recall": 0.5
+    }
+  }
+}

@@ -1,0 +1,189 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   DESIGN SYSTEM — dark-tech theme (default) + light theme variant
+   ----------------------------------------------------------------------------
+   Tailwind v4 is CSS-first: tokens declared inside @theme are what generate
+   the actual utility classes (bg-bg-page, text-accent, font-heading, ...).
+   To support switching themes at *runtime* (not just build time), the actual
+   color values live in plain CSS custom properties below, scoped per
+   [data-theme], and @theme inline just points each Tailwind token at the
+   matching custom property — "inline" is what makes Tailwind re-resolve the
+   var() at paint time instead of baking in a literal value. `data-theme` is
+   set on <html> by the inline anti-flash script in app/layout.tsx and by
+   ThemeContext afterward — see context/ThemeContext.tsx.
+   ============================================================================ */
+:root,
+[data-theme="dark"] {
+  --bg-page: #12151f;
+  --bg-surface: #1a1f2c;
+  --bg-sidebar: #171b26;
+  --accent-purple: #8b5cf6;
+  --accent-cyan: #22d3ee;
+  --text-primary: #e5e7eb;
+  --text-muted: #8b93a7;
+  --text-strong: #ffffff;
+  --border: #232838;
+  --tint: rgba(255, 255, 255, 0.06);
+  --code-bg: rgba(0, 0, 0, 0.35);
+  --shadow-color: rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] {
+  --bg-page: #f8f9fc;
+  --bg-surface: #ffffff;
+  --bg-sidebar: #f1f3f9;
+  --accent-purple: #7c3aed;
+  --accent-cyan: #0ea5e9;
+  --text-primary: #1e2130;
+  --text-muted: #6b7280;
+  --text-strong: #0b0e14;
+  --border: #e5e7eb;
+  --tint: rgba(15, 23, 42, 0.05);
+  --code-bg: rgba(15, 23, 42, 0.06);
+  /* Soft grey shadow, not the dark glow used in dark mode. */
+  --shadow-color: rgba(30, 41, 59, 0.12);
+}
+
+@theme inline {
+  --color-bg-page: var(--bg-page);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-sidebar: var(--bg-sidebar);
+  --color-accent: var(--accent-purple);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-text: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-tint: var(--tint);
+
+  --shadow-soft: 0 4px 12px var(--shadow-color);
+  --shadow-elevated: 0 20px 48px var(--shadow-color);
+
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg-page);
+  color: var(--color-text);
+}
+
+/* Smooth cross-fade when the theme flips, instead of an abrupt snap.
+   Scoped to transition-property (not `transition: all`) so it only ever
+   touches color-related properties — layout, transform, and opacity
+   animations (Framer Motion, hover scale, etc.) are untouched. */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Thin, theme-aware scrollbars for the sidebar and chat scroll areas —
+   default OS scrollbars read as a jarring mismatched leftover otherwise. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-muted);
+}
+
+/* Minimal hand-rolled markdown styling for assistant answers (react-markdown
+   output), scoped to .prose-chat rather than pulling in
+   @tailwindcss/typography — that plugin's defaults are tuned for light
+   prose pages and would need broad overriding anyway for a themed bubble. */
+.prose-chat {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.prose-chat :where(h1, h2, h3, h4) {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  margin-top: 0.75em;
+  margin-bottom: 0.35em;
+}
+.prose-chat p {
+  margin: 0.5em 0;
+}
+.prose-chat p:first-child {
+  margin-top: 0;
+}
+.prose-chat p:last-child {
+  margin-bottom: 0;
+}
+.prose-chat ul,
+.prose-chat ol {
+  margin: 0.5em 0;
+  padding-left: 1.4em;
+}
+.prose-chat ul {
+  list-style: disc;
+}
+.prose-chat ol {
+  list-style: decimal;
+}
+.prose-chat li {
+  margin: 0.2em 0;
+}
+.prose-chat code {
+  font-family: var(--font-mono);
+  background: var(--tint);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.prose-chat pre {
+  background: var(--code-bg);
+  padding: 0.75em 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 0.6em 0;
+}
+.prose-chat pre code {
+  background: none;
+  padding: 0;
+}
+.prose-chat a {
+  color: var(--color-accent-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-chat strong {
+  /* Deliberately a step beyond --text-primary (not just reusing it) so
+     bold markdown text still reads as emphasized relative to the rest of
+     the answer, in both themes: brighter-than-grey text on dark
+     backgrounds, near-black-on-dark-grey on light backgrounds. */
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.prose-chat blockquote {
+  border-left: 2px solid var(--color-accent);
+  padding-left: 0.75em;
+  color: var(--color-text-muted);
+  margin: 0.5em 0;
+}
+.prose-chat table {
+  border-collapse: collapse;
+  margin: 0.6em 0;
+  width: 100%;
+}
+.prose-chat th,
+.prose-chat td {
+  border: 1px solid var(--color-border);
+  padding: 0.4em 0.6em;
+  text-align: left;
+}
