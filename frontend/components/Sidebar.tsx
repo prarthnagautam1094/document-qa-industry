@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BarChart3, LogOut, MessageSquare, Sparkles, X } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import { AutoReadToggle } from "./AutoReadToggle";
 import { UploadZone } from "./UploadZone";
 import { DocumentList } from "./DocumentList";
 import { ThemeToggle } from "./ThemeToggle";
@@ -89,6 +90,8 @@ function SidebarContent() {
       <UploadZone />
 
       <DocumentList />
+
+      <AutoReadToggle />
 
       <UserMenu />
 

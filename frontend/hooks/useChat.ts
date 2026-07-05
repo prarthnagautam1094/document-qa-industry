@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useVoice } from "@/context/VoiceContext";
 import { ApiError, askQuestion } from "@/lib/api";
 import type { ChatMessage, DisplayMessage } from "@/lib/types";
 
@@ -21,6 +22,7 @@ export function useChat() {
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const sessionIdRef = useRef<string>(generateId());
+  const { speakIfAutoRead } = useVoice();
 
   const sendMessage = useCallback(
     async (question: string) => {
@@ -60,6 +62,7 @@ export function useChat() {
               : m
           )
         );
+        speakIfAutoRead(pendingId, response.answer);
       } catch (err) {
         // Replace the pending bubble with a visible inline error rather
         // than leaving a permanent typing indicator — the caller is
@@ -77,7 +80,7 @@ export function useChat() {
         setIsSending(false);
       }
     },
-    [messages, isSending]
+    [messages, isSending, speakIfAutoRead]
   );
 
   const clearMessages = useCallback(() => setMessages([]), []);

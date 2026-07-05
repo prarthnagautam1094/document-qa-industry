@@ -12,6 +12,7 @@ import { Toaster } from "sonner";
 import { AppStateProvider, useAppState } from "@/context/AppStateContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider, useTheme } from "@/context/ThemeContext";
+import { VoiceProvider } from "@/context/VoiceContext";
 import { Sidebar } from "./Sidebar";
 import { BackendOfflineScreen } from "./BackendOfflineScreen";
 
@@ -85,7 +86,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   return (
     <AppStateProvider>
-      <ShellInner>{children}</ShellInner>
+      <VoiceProvider>
+        <ShellInner>{children}</ShellInner>
+      </VoiceProvider>
     </AppStateProvider>
   );
 }

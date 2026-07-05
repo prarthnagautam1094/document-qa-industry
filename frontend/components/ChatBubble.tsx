@@ -7,6 +7,7 @@ import { Bot, User } from "lucide-react";
 import type { DisplayMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { SourceBadge } from "./SourceBadge";
+import { SpeakButton } from "./SpeakButton";
 import { TypingIndicator } from "./TypingIndicator";
 
 export function ChatBubble({ message }: { message: DisplayMessage }) {
@@ -48,11 +49,16 @@ export function ChatBubble({ message }: { message: DisplayMessage }) {
           )}
         </div>
 
-        {!isUser && !message.pending && message.sources && message.sources.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {message.sources.map((source, i) => (
-              <SourceBadge key={`${source}-${i}`} source={source} />
-            ))}
+        {!isUser && !message.pending && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <SpeakButton messageId={message.id} text={message.content} />
+            {message.sources && message.sources.length > 0 && (
+              <>
+                {message.sources.map((source, i) => (
+                  <SourceBadge key={`${source}-${i}`} source={source} />
+                ))}
+              </>
+            )}
           </div>
         )}
       </div>
