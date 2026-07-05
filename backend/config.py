@@ -4,6 +4,8 @@ Run uvicorn with this directory (backend/) as the working directory
 (e.g. `uvicorn main:app` from inside backend/) — load_dotenv() searches
 upward from the current working directory for a .env file, and the
 relative paths below (PERSIST_DIRECTORY) are resolved the same way.
+
+Author: Prarthna Gautam (https://github.com/prarthnagautam1094)
 """
 
 import os
@@ -76,6 +78,23 @@ class Settings:
     RELEVANCE_THRESHOLD: float = 0.2
     MAX_RETRIEVAL_CANDIDATES: int = 10
     MAX_CONTEXT_CHUNKS: int = 3
+
+    # Number of live web search results to fetch when the LLM calls the
+    # search_web tool (see rag_service._build_tools). 3 mirrors
+    # MAX_CONTEXT_CHUNKS — enough for a grounded answer without bloating
+    # the prompt with marginal results.
+    WEB_SEARCH_MAX_RESULTS: int = 3
+
+    # Tool-calling loop tunables (see rag_service.generate_answer). 3
+    # iterations comfortably covers "one tool" (1 turn) and "both tools"
+    # (2 turns, plus one spare) without letting a stuck model loop
+    # indefinitely. 4 retries mitigates a documented Groq/Llama tool-
+    # calling quirk where the model occasionally emits a malformed
+    # function-call that Groq's API rejects with a 400 — non-deterministic
+    # (temperature > 0), so a retry has a real chance of succeeding where
+    # the previous attempt didn't.
+    MAX_TOOL_ITERATIONS: int = 3
+    MAX_TOOL_CALL_RETRIES: int = 4
 
 
 settings = Settings()

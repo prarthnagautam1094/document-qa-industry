@@ -50,6 +50,7 @@ def test_ask_relevant_question_returns_grounded_answer(client, shared_document):
     assert body["answer"].strip() != ""
     assert "couldn't find relevant information" not in body["answer"]
     assert len(body["sources"]) > 0
+    assert body["source_type"] == "document"
     # The answer should contain the actual number from the document
     # ("18") — this is what distinguishes "answered from retrieved
     # context" from "the LLM produced a plausible-sounding but ungrounded
@@ -58,12 +59,72 @@ def test_ask_relevant_question_returns_grounded_answer(client, shared_document):
     assert VACATION_DAYS.split()[0] in body["answer"]
 
 
-def test_ask_offtopic_question_returns_fallback(client, shared_document):
+def test_ask_general_knowledge_question_routes_to_web(client, shared_document):
+    # "What is the capital of Japan?" is unanswerable from the uploaded
+    # document (an employee handbook) but is exactly the kind of general-
+    # knowledge/current-information question classify_route() should
+    # send to web search instead of falling back — covers the routing
+    # decision end to end against the real Groq classifier and the real
+    # DuckDuckGo-backed search, not a mocked stand-in for either.
     response = client.post(
         "/chat/ask",
         json={
             "question": "What is the capital of Japan?",
-            "session_id": "test-offtopic",
+            "session_id": "test-web",
+            "conversation_history": [],
+        },
+    )
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["source_type"] in ("web", "both")
+    assert "couldn't find relevant information" not in body["answer"]
+    assert len(body["sources"]) > 0
+    # A web citation is a URL, unlike a document citation ("filename (p. N)").
+    assert any(s.startswith("http") for s in body["sources"])
+    assert "Tokyo" in body["answer"]
+
+
+def test_ask_comparison_question_routes_to_both(client, shared_document):
+    # A question that plausibly needs both the uploaded document (this
+    # company's specific vacation allowance) and live web results (the
+    # current industry average) — covers real tool calling invoking
+    # *both* search_documents and search_web for one question (via the
+    # sequential tool-calling loop in generate_answer), not just one or
+    # the other.
+    response = client.post(
+        "/chat/ask",
+        json={
+            "question": (
+                f"How does our company's {VACATION_DAYS} of paid vacation compare to "
+                "the current average paid leave offered by companies in India?"
+            ),
+            "session_id": "test-both",
+            "conversation_history": [],
+        },
+    )
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["source_type"] == "both"
+    assert "couldn't find relevant information" not in body["answer"]
+    # A "both" answer should cite at least one document source (not a
+    # URL) and at least one web source (a URL).
+    assert any(not s.startswith("http") for s in body["sources"])
+    assert any(s.startswith("http") for s in body["sources"])
+
+
+def test_ask_unanswerable_question_returns_fallback(client, shared_document):
+    # Phrasing that explicitly points at "the document" should route to
+    # document_search (not web_search), about a topic guaranteed absent
+    # from the shared employee-handbook fixture — covers the "found
+    # nothing from either source" fallback without depending on live web
+    # search returning empty (which would make this test flaky).
+    response = client.post(
+        "/chat/ask",
+        json={
+            "question": "According to the document, what is the CEO's favorite color?",
+            "session_id": "test-unanswerable",
             "conversation_history": [],
         },
     )

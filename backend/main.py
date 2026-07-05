@@ -2,6 +2,9 @@
 
 Run from inside this directory with:
     uvicorn main:app --reload
+
+Created by Prarthna Gautam (https://github.com/prarthnagautam1094) — 2026.
+Part of the Document Q&A project.
 """
 
 import logging

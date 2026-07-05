@@ -91,6 +91,18 @@ function SidebarContent() {
       <DocumentList />
 
       <UserMenu />
+
+      <p className="text-center text-[10px] text-text-muted">
+        Built by{" "}
+        <a
+          href="https://github.com/prarthnagautam1094"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-text-muted transition-colors hover:text-accent-cyan"
+        >
+          Prarthna Gautam
+        </a>
+      </p>
     </div>
   );
 }

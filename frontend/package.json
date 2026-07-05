@@ -2,6 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
+  "author": "Prarthna Gautam (https://github.com/prarthnagautam1094)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

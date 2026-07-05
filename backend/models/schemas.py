@@ -43,13 +43,28 @@ class ChatResponse(BaseModel):
     answer: str = Field(
         ...,
         description=(
-            "The generated answer, or a fixed fallback message if no "
-            "uploaded document had a chunk relevant enough to answer from."
+            "The generated answer, or a fixed fallback message if neither "
+            "the uploaded documents nor a web search had anything relevant "
+            "to answer from."
         ),
     )
     sources: List[str] = Field(
         default_factory=list,
-        description="De-duplicated 'filename (p. N)' citations for the chunks the answer was grounded in.",
+        description=(
+            "De-duplicated citations for what the answer was grounded in — "
+            "'filename (p. N)' for document chunks, or a URL for web "
+            "search results. Use `source_type` to tell which citations in "
+            "this list are which (a URL is always a web source; anything "
+            "else is a document source)."
+        ),
+    )
+    source_type: str = Field(
+        ...,
+        description=(
+            "Which source(s) the answer was routed to and grounded in: "
+            "'document' (uploaded documents only), 'web' (live web search "
+            "only), or 'both'."
+        ),
     )
 
 

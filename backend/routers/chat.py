@@ -21,11 +21,12 @@ router = APIRouter(prefix="/chat", tags=["chat"])
     response_model=ChatResponse,
     summary="Ask a question about the ingested documents",
     description=(
-        "Answers a question using retrieval-augmented generation over "
-        "uploaded PDFs. `conversation_history` is used only to resolve "
-        "follow-up questions into a standalone query before retrieval — "
-        "the answer is generated from `question` as asked. If no document "
-        "has a chunk relevant enough to answer from (including when no "
+        "Answers a question by routing it to the uploaded documents, a "
+        "live web search, or both, whichever the question needs. "
+        "`conversation_history` is used only to resolve follow-up "
+        "questions into a standalone query before routing/retrieval — the "
+        "answer is generated from `question` as asked. If neither source "
+        "has anything relevant to answer from (including when no "
         "documents have been uploaded yet), a fallback message is "
         "returned with an empty `sources` list rather than an error."
     ),
@@ -36,19 +37,19 @@ def ask_question(
     db: Session = Depends(database.get_db),
     user_id: str = Depends(auth_service.get_current_user),
 ) -> ChatResponse:
-    """Answer a question using retrieval-augmented generation over ingested PDFs."""
+    """Answer a question, routed to documents, web search, or both."""
     logger.info(
         "Chat request: session=%s question=%r history_len=%d",
         request.session_id,
         request.question,
         len(request.conversation_history),
     )
-    # Timed end-to-end (rewrite + retrieval + generation), not just the LLM
-    # call in isolation, since response_time_seconds in query_logs is
-    # meant to reflect what the caller actually waited for.
+    # Timed end-to-end (rewrite + routing + retrieval/search + generation),
+    # not just the LLM call in isolation, since response_time_seconds in
+    # query_logs is meant to reflect what the caller actually waited for.
     start_time = time.time()
     try:
-        answer, sources, num_chunks_retrieved = rag_service.generate_answer(
+        answer, sources, num_chunks_retrieved, source_type = rag_service.generate_answer(
             request.question, request.conversation_history, vectordb, user_id
         )
     except Exception:
@@ -70,4 +71,4 @@ def ask_question(
         logger.error("Could not log conversation/query for session %s", request.session_id, exc_info=True)
         db.rollback()
 
-    return ChatResponse(answer=answer, sources=sources)
+    return ChatResponse(answer=answer, sources=sources, source_type=source_type)

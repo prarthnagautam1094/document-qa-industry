@@ -1,3 +1,8 @@
+/**
+ * Created by Prarthna Gautam (https://github.com/prarthnagautam1094) — 2026.
+ * Part of the Document Q&A project.
+ */
+
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
@@ -23,7 +28,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Document Q&A",
-  description: "Ask questions grounded in your own documents.",
+  description: "Ask questions grounded in your own documents. Built by Prarthna Gautam.",
+  authors: [{ name: "Prarthna Gautam", url: "https://github.com/prarthnagautam1094" }],
 };
 
 // Sets data-theme on <html> from localStorage before React hydrates, so

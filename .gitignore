@@ -23,3 +23,6 @@ chroma_db/
 # --- OS / editor cruft ---
 .DS_Store
 *.log
+
+# --- Local tool state (not project code) ---
+.claude/

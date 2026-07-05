@@ -7,6 +7,9 @@ reading/writing `st.session_state`, every function takes the resources it
 needs (a Chroma instance, a conversation history list) as explicit
 parameters, since a stateless API has no per-user session object to reach
 into.
+
+Created by Prarthna Gautam (https://github.com/prarthnagautam1094) — 2026.
+Part of the Document Q&A project.
 """
 
 import logging
@@ -16,23 +19,39 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, Tuple
 
+import groq
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.tools import BaseTool, tool
 from langchain_groq import ChatGroq
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from sentence_transformers import CrossEncoder
 
 from config import settings
 from models.schemas import ChatMessage
+from services import web_search_service
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = (
-    "Answer only based on the provided context. "
-    "If the answer isn't in the context, say "
-    "\"I don't know based on the provided document.\""
+# Single system prompt for the tool-calling loop below — the LLM decides
+# for itself (via real tool calls, not a separate classification prompt)
+# whether it needs the uploaded documents, live web search, or both, so
+# there's no longer a per-route prompt variant to keep in sync with a
+# routing decision made elsewhere.
+TOOL_SYSTEM_PROMPT = (
+    "You answer questions by calling tools to gather grounded information "
+    "before responding — never answer from your own prior knowledge alone. "
+    "Call search_documents for anything that could be in the user's own "
+    "uploaded documents, and search_web for current events or general "
+    "knowledge unlikely to be in those documents. Call both, one at a "
+    "time, if the question plausibly needs information from both. Base "
+    "your final answer only on what the tools returned. If a tool result "
+    "doesn't answer the question, say so honestly rather than guessing. "
+    "When your answer draws on both a document and a web result, clearly "
+    "distinguish which part comes from which (e.g. 'According to your "
+    "document...' vs 'According to a recent web search...')."
 )
 
 
@@ -311,47 +330,199 @@ def retrieve_relevant_chunks(query: str, vectordb: Chroma, user_id: str) -> List
     return reranked[: settings.MAX_CONTEXT_CHUNKS]
 
 
+def _web_source_label(result: web_search_service.WebSearchResult) -> str:
+    """Build the citation label for one web search result — the URL
+    itself, matching how a document citation is the thing you'd actually
+    click through to verify (a "filename (p. N)" analog would be the
+    result's title, but the URL is what the frontend needs to link out).
+    """
+    return result["url"]
+
+
+class _ToolExecutionState:
+    """Collects what each tool call actually retrieved, as it happens.
+
+    The LLM only ever sees the plain-text string a tool call returns (fed
+    back as a ToolMessage) — but generate_answer still needs the
+    underlying Document/WebSearchResult objects afterward to build the
+    `sources` citation list, count `num_chunks_retrieved`, and know which
+    tool(s) were actually invoked for `source_type`. Mutated from inside
+    the tool closures in _build_tools() rather than parsed back out of
+    the LLM's tool-call arguments or its final text, which would be
+    fragile and duplicate work retrieve_relevant_chunks/search_web
+    already did.
+    """
+
+    def __init__(self) -> None:
+        self.doc_results: List[Document] = []
+        self.web_results: List[web_search_service.WebSearchResult] = []
+        self.tools_called: List[str] = []
+
+
+def _build_tools(vectordb: Chroma, user_id: str, state: _ToolExecutionState) -> List[BaseTool]:
+    """Build the two tools the LLM can call, bound via closure to this
+    request's vectordb/user_id/state.
+
+    The LLM only ever sees and controls the `query` argument each tool's
+    schema exposes — which vector store and which user's chunks to
+    search are this request's own resources, never something a tool-
+    calling LLM should be trusted to supply itself. A fresh pair of
+    closures is built per request (cheap: LangChain's @tool wrapping is
+    lightweight) rather than sharing one module-level instance, since
+    each request has its own vectordb/user_id/state to close over.
+    """
+
+    @tool
+    def search_documents(query: str) -> str:
+        """Search the user's own uploaded documents (their company handbook, HR policies, personal reports, or other files they've uploaded) for information relevant to the query. Use this whenever the question could be about content the user has personally uploaded."""
+        state.tools_called.append("search_documents")
+        docs = retrieve_relevant_chunks(query, vectordb, user_id)
+        state.doc_results = docs
+        if not docs:
+            return "No relevant content found in the uploaded documents."
+        return "\n\n".join(f"[{_chunk_label(doc)}]\n{doc.page_content}" for doc in docs)
+
+    @tool
+    def search_web(query: str) -> str:
+        """Search the live web for current events, real-time facts (today's weather, news, sports results, prices), or general world knowledge unlikely to be found in the user's own uploaded documents. Use this whenever the question needs up-to-date or general information."""
+        state.tools_called.append("search_web")
+        results = web_search_service.search_web(query)
+        state.web_results = results
+        if not results:
+            return "No web search results found."
+        return "\n\n".join(f"{r['title']}\nSource: {r['url']}\n{r['snippet']}" for r in results)
+
+    return [search_documents, search_web]
+
+
+def _invoke_with_tool_retry(llm_with_tools, messages: List[BaseMessage]):
+    """Invoke a tool-bound LLM, retrying on Groq's occasional malformed
+    tool-call generation.
+
+    llama-3.3-70b-versatile via Groq's API sometimes emits a syntactically
+    broken function-call (e.g. a missing closing tag), which Groq rejects
+    with a 400 `tool_use_failed` BadRequestError rather than returning it
+    as a normal (unusable) response — this isn't a bug in this code, it's
+    a documented, non-deterministic quirk of the model/API pairing.
+    Retrying is the mitigation Groq's own docs recommend: since the model
+    runs at temperature > 0, a retry samples a fresh generation and has a
+    real chance of producing a well-formed call where the last attempt
+    didn't. Exhausting all retries propagates the error — by this point
+    it's indistinguishable from a genuine Groq outage, which the router
+    already maps to a 500.
+    """
+    last_exc: Exception = RuntimeError("unreachable")
+    for attempt in range(settings.MAX_TOOL_CALL_RETRIES):
+        try:
+            return llm_with_tools.invoke(messages)
+        except groq.BadRequestError as exc:
+            last_exc = exc
+            logger.warning(
+                "Tool-call generation failed (attempt %d/%d): %s",
+                attempt + 1,
+                settings.MAX_TOOL_CALL_RETRIES,
+                exc,
+            )
+    raise last_exc
+
+
 def generate_answer(
     question: str, history: List[ChatMessage], vectordb: Chroma, user_id: str
-) -> Tuple[str, List[str], int]:
-    """Run the full RAG pipeline for one question: rewrite -> retrieve -> generate.
+) -> Tuple[str, List[str], int, str]:
+    """Run the full pipeline for one question: rewrite -> tool-calling loop -> generate.
 
-    Returns (answer, sources, num_chunks_retrieved). `history` is used only
-    to rewrite `question` into a standalone query for retrieval — the
-    answer itself is generated from `question` as asked. Raises on an LLM
-    failure during generation (the router maps that to a 500); a retrieval
-    miss is not an error and instead returns a fixed fallback message with
-    no sources and num_chunks_retrieved=0 — the router uses that zero to
-    log the turn as unanswered in query_logs without needing to string-
-    match the fallback text.
+    Returns (answer, sources, num_chunks_retrieved, source_type). `history`
+    is used only to rewrite `question` into a standalone query before the
+    tool-calling loop — the answer itself is generated from `question` as
+    asked (via the tool-calling messages, which use the rewritten query).
+
+    Unlike the earlier classify-then-retrieve design, there's no separate
+    routing step: the LLM is given both tools (see _build_tools) and
+    decides for itself, via real tool_calls, whether it needs
+    search_documents, search_web, or both — it may even rephrase the
+    query it sends to a tool rather than using the raw question verbatim.
+    The first turn forces at least one tool call (tool_choice="required")
+    so every answer stays grounded in a tool result; later turns use
+    tool_choice="auto" so the model can call the *other* tool too (for a
+    question needing both) or stop and produce its final answer.
+    source_type is derived from whichever tool(s) were actually called,
+    not from a prediction made before retrieval happened.
+
+    Raises on an LLM failure during the tool-calling loop (the router
+    maps that to a 500); finding nothing from either source is not an
+    error and instead returns a fixed fallback message with no sources
+    and num_chunks_retrieved=0 — the router uses that zero to log the
+    turn as unanswered in query_logs without needing to string-match the
+    fallback text.
     """
     search_query = rewrite_query_standalone(question, history)
-    results = retrieve_relevant_chunks(search_query, vectordb, user_id)
 
-    if not results:
+    state = _ToolExecutionState()
+    tools = _build_tools(vectordb, user_id, state)
+    tools_by_name = {t.name: t for t in tools}
+
+    llm = ChatGroq(model=settings.LLM_MODEL)
+    llm_required = llm.bind_tools(tools, tool_choice="required")
+    llm_auto = llm.bind_tools(tools, tool_choice="auto")
+
+    messages: List[BaseMessage] = [
+        SystemMessage(content=TOOL_SYSTEM_PROMPT),
+        HumanMessage(content=search_query),
+    ]
+
+    llm_for_next_turn = llm_required
+    ai_message = None
+    for _ in range(settings.MAX_TOOL_ITERATIONS):
+        ai_message = _invoke_with_tool_retry(llm_for_next_turn, messages)
+        messages.append(ai_message)
+        if not ai_message.tool_calls:
+            break
+        for call in ai_message.tool_calls:
+            # Demo/debug evidence that real function calling is
+            # happening: the tool name AND the LLM's own chosen
+            # arguments, not a routing label we assigned ourselves.
+            logger.info("LLM tool call: %s(%s)", call["name"], call["args"])
+            tool_fn = tools_by_name[call["name"]]
+            result_text = tool_fn.invoke(call["args"])
+            messages.append(ToolMessage(content=result_text, tool_call_id=call["id"]))
+        llm_for_next_turn = llm_auto  # only the first turn is forced
+
+    if ai_message.tool_calls:
+        # Hit the iteration cap while the model still wanted to call more
+        # tools — not expected in practice (MAX_TOOL_ITERATIONS covers
+        # "one tool" and "both tools" with a turn to spare), but if it
+        # happens, force a plain-text completion from whatever's been
+        # gathered so far rather than surfacing an incomplete message.
+        ai_message = llm.invoke(messages)
+
+    called = set(state.tools_called)
+    if called == {"search_documents", "search_web"}:
+        source_type = "both"
+    elif called == {"search_web"}:
+        source_type = "web"
+    else:
+        # Covers the expected {"search_documents"} case and, as a
+        # conservative fallback, the (unreachable in practice, since
+        # tool_choice="required" forces a first call) empty-set case.
+        source_type = "document"
+
+    if not state.doc_results and not state.web_results:
         return (
-            "I couldn't find relevant information in the uploaded documents for this question.",
+            "I couldn't find relevant information to answer this question.",
             [],
             0,
+            source_type,
         )
 
-    context = "\n\n".join(doc.page_content for doc in results)
-
-    # Build citation labels from each retrieved chunk, de-duplicated but
-    # keeping first-seen (i.e. re-ranked) order.
     sources: List[str] = []
-    for doc in results:
+    for doc in state.doc_results:
         label = _chunk_label(doc)
         if label not in sources:
             sources.append(label)
+    for result in state.web_results:
+        label = _web_source_label(result)
+        if label not in sources:
+            sources.append(label)
 
-    llm = ChatGroq(model=settings.LLM_MODEL)
-    messages = [
-        SystemMessage(content=SYSTEM_PROMPT),
-        HumanMessage(content=f"Context:\n{context}\n\nQuestion: {question}"),
-    ]
-    # Unlike rewrite_query_standalone, a failure here must not be silently
-    # swallowed — there'd be no answer left to return — so it propagates to
-    # the router, which maps it to a 500.
-    response = llm.invoke(messages)
-    return response.content, sources, len(results)
+    num_results = len(state.doc_results) + len(state.web_results)
+    return ai_message.content, sources, num_results, source_type

@@ -5,6 +5,10 @@ PDFs, ask questions grounded in their content, and get cited answers — with
 each signed-in user's documents and chat history fully isolated from every
 other user's.
 
+### Author
+
+Created by **[Prarthna Gautam](https://github.com/prarthnagautam1094)**.
+
 ## Overview
 
 This project pairs a FastAPI backend (RAG pipeline over a vector store) with
@@ -161,3 +165,7 @@ pytest
 The suite runs real integration tests against the configured Chroma store, Postgres database, and Groq API (no mocks) — retrieval thresholds, prompt behavior, and chunking are exactly the things a mocked test would hide. The `get_current_user` auth dependency is overridden with a fixed test user id for most tests (see `tests/conftest.py`); `tests/test_auth.py` specifically exercises the real 401 behavior.
 
 There is also a separate RAG-quality evaluation harness (faithfulness, answer relevancy, context precision/recall via `ragas`) at `backend/evaluation/run_eval.py`.
+
+## License
+
+MIT © 2026 [Prarthna Gautam](https://github.com/prarthnagautam1094) — see [LICENSE](LICENSE).

@@ -18,9 +18,14 @@ export interface ChatRequest {
   conversation_history: ChatMessage[];
 }
 
+/** Which source(s) the backend routed the question to and grounded the
+ * answer in — see backend/services/rag_service.py's classify_route(). */
+export type SourceType = "document" | "web" | "both";
+
 export interface ChatResponse {
   answer: string;
   sources: string[];
+  source_type: SourceType;
 }
 
 export interface DocumentInfo {
@@ -66,5 +71,6 @@ export interface DisplayMessage {
   role: ChatRole;
   content: string;
   sources?: string[];
+  sourceType?: SourceType;
   pending?: boolean;
 }

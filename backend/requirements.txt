@@ -14,6 +14,13 @@ sqlalchemy==2.0.51
 psycopg2-binary==2.9.12
 supabase==2.31.0
 
+# Free, no-API-key web search for the "web_search"/"both" routing paths in
+# rag_service.py. The `duckduckgo-search` package (as originally suggested)
+# has been renamed upstream to `ddgs` by its maintainer and now just prints
+# a deprecation warning and returns empty results — `ddgs` is the actively
+# maintained successor with the same free DuckDuckGo-backed search.
+ddgs==9.14.4
+
 # Test-only dependencies (tests/)
 pytest==9.1.1
 pytest-asyncio==1.4.0

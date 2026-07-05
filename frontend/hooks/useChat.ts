@@ -50,7 +50,13 @@ export function useChat() {
         setMessages((prev) =>
           prev.map((m) =>
             m.id === pendingId
-              ? { ...m, content: response.answer, sources: response.sources, pending: false }
+              ? {
+                  ...m,
+                  content: response.answer,
+                  sources: response.sources,
+                  sourceType: response.source_type,
+                  pending: false,
+                }
               : m
           )
         );

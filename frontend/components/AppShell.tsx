@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Created by Prarthna Gautam (https://github.com/prarthnagautam1094) — 2026.
+ * Part of the Document Q&A project.
+ */
+
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Loader2 } from "lucide-react";
