@@ -61,6 +61,33 @@ export interface HealthResponse {
   status: string;
 }
 
+export interface QueryCountByDate {
+  date: string;
+  count: number;
+}
+
+export interface DocumentQueryCount {
+  filename: string;
+  count: number;
+}
+
+export interface RecentConversation {
+  timestamp: string;
+  question: string;
+  was_answered: boolean;
+}
+
+/** Response shape for GET /analytics — scoped entirely to the signed-in user. */
+export interface AnalyticsResponse {
+  total_documents: number;
+  total_queries: number;
+  success_rate: number;
+  avg_response_time: number;
+  queries_over_time: QueryCountByDate[];
+  most_queried_documents: DocumentQueryCount[];
+  recent_conversations: RecentConversation[];
+}
+
 /**
  * A chat message as displayed in the UI — a superset of ChatMessage that
  * also carries per-message UI state (sources, a client-side id for React

@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import database
 from config import settings
 from models.schemas import HealthResponse
-from routers import chat, documents
+from routers import analytics, chat, documents
 
 logging.basicConfig(
     level=logging.INFO,
@@ -92,6 +92,7 @@ async def log_requests(request: Request, call_next):
 
 app.include_router(documents.router)
 app.include_router(chat.router)
+app.include_router(analytics.router)
 
 
 def _patch_openapi_schema() -> dict:

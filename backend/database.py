@@ -17,7 +17,10 @@ persistence in a production-grade backend rather than a demo script.
 """
 
 import logging
-from datetime import datetime, timezone
+import re
+from collections import Counter
+from datetime import datetime, timedelta, timezone
+from typing import List
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, create_engine, func
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
@@ -220,3 +223,115 @@ def get_query_stats(db: Session, user_id: str) -> dict:
         "avg_response_time": round(avg_time, 2),
         "success_rate": round(answered / total * 100, 1),
     }
+
+
+def get_document_count(db: Session, user_id: str) -> int:
+    """Return how many documents this user currently has on record."""
+    return db.query(Document).filter(Document.user_id == user_id).count()
+
+
+def get_queries_over_time(db: Session, user_id: str, days: int = 30) -> List[dict]:
+    """Return one {date, count} entry per day for the last `days` days,
+    oldest first, including days with zero queries.
+
+    Zero-filling every day (rather than only the days something actually
+    happened) is what lets a caller plot this directly as a continuous
+    time series — a chart built from a sparse GROUP BY would show gaps
+    wherever nothing happened instead of a flat zero, which reads as
+    missing data rather than "no activity that day".
+    """
+    today = datetime.now(timezone.utc).date()
+    start_date = today - timedelta(days=days - 1)
+    start_datetime = datetime.combine(start_date, datetime.min.time(), tzinfo=timezone.utc)
+
+    rows = (
+        db.query(func.date(QueryLog.timestamp).label("day"), func.count(QueryLog.id))
+        .filter(QueryLog.user_id == user_id, QueryLog.timestamp >= start_datetime)
+        .group_by("day")
+        .all()
+    )
+    counts_by_day = {row[0]: row[1] for row in rows}
+
+    return [
+        {
+            "date": (start_date + timedelta(days=i)).isoformat(),
+            "count": counts_by_day.get(start_date + timedelta(days=i), 0),
+        }
+        for i in range(days)
+    ]
+
+
+# Matches the "filename (p. N)" document-citation format generate_answer
+# builds (see rag_service._chunk_label) — used below to recover just the
+# filename, stripping the page suffix, so citations of the same document
+# on different pages count toward one total instead of splitting it.
+_DOC_SOURCE_PATTERN = re.compile(r"^(.*)\s\(p\.\s*.+\)$")
+
+
+def get_most_queried_documents(db: Session, user_id: str, limit: int = 5) -> List[dict]:
+    """Return the top `limit` documents by how often they were cited as a
+    source across this user's conversations, most-cited first.
+
+    Parses each conversation's flattened `sources` string (see
+    log_conversation) rather than querying a normalized sources table —
+    sources were never modeled as their own rows (see Conversation's
+    docstring), so this is the one place that flattening costs a bit of
+    string parsing instead of a GROUP BY. Web-search citations (bare
+    URLs, from rag_service._web_source_label) are excluded — this stat is
+    specifically about the user's own uploaded documents.
+    """
+    rows = (
+        db.query(Conversation.sources)
+        .filter(Conversation.user_id == user_id, Conversation.sources.isnot(None))
+        .all()
+    )
+
+    counts: Counter = Counter()
+    for (sources_text,) in rows:
+        if not sources_text:
+            continue
+        for raw in sources_text.split(", "):
+            raw = raw.strip()
+            if not raw or raw.startswith("http://") or raw.startswith("https://"):
+                continue
+            match = _DOC_SOURCE_PATTERN.match(raw)
+            filename = match.group(1) if match else raw
+            counts[filename] += 1
+
+    return [{"filename": filename, "count": count} for filename, count in counts.most_common(limit)]
+
+
+# Recent-conversation questions are shown as a table row, not a full
+# transcript — truncated so one long question can't blow out the layout.
+_RECENT_QUESTION_MAX_LENGTH = 100
+
+
+def get_recent_conversations(db: Session, user_id: str, limit: int = 10) -> List[dict]:
+    """Return the `limit` most recent conversation turns for this user, newest first.
+
+    `was_answered` is derived from whether any sources were cited rather
+    than joined against query_logs — the two tables have no shared key
+    linking a specific conversation row to a specific query_log row, but
+    generate_answer's contract guarantees they agree: sources is non-empty
+    exactly when num_chunks_retrieved > 0 (query_logs.was_answered), so
+    checking sources here is equivalent without an unreliable join.
+    """
+    rows = (
+        db.query(Conversation)
+        .filter(Conversation.user_id == user_id)
+        .order_by(Conversation.timestamp.desc())
+        .limit(limit)
+        .all()
+    )
+    return [
+        {
+            "timestamp": row.timestamp.isoformat(),
+            "question": (
+                row.question
+                if len(row.question) <= _RECENT_QUESTION_MAX_LENGTH
+                else row.question[: _RECENT_QUESTION_MAX_LENGTH - 1].rstrip() + "…"
+            ),
+            "was_answered": bool(row.sources),
+        }
+        for row in rows
+    ]

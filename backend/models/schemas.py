@@ -114,3 +114,51 @@ class HealthResponse(BaseModel):
     """Response body for GET /health."""
 
     status: str = Field(..., description="'ok' when the service is up and able to serve requests.")
+
+
+class QueryCountByDate(BaseModel):
+    """One point in the queries-over-time series."""
+
+    date: str = Field(..., description="ISO-8601 date (YYYY-MM-DD).")
+    count: int = Field(..., description="Number of questions asked on this date.")
+
+
+class DocumentQueryCount(BaseModel):
+    """One entry in the most-queried-documents ranking."""
+
+    filename: str = Field(..., description="Document filename.")
+    count: int = Field(..., description="Number of times this document was cited as an answer source.")
+
+
+class RecentConversation(BaseModel):
+    """One row in the recent-conversations table."""
+
+    timestamp: str = Field(..., description="ISO-8601 timestamp of the turn.")
+    question: str = Field(..., description="The question asked, truncated to 100 characters.")
+    was_answered: bool = Field(
+        ..., description="Whether the answer was grounded in at least one document/web source."
+    )
+
+
+class AnalyticsResponse(BaseModel):
+    """Response body for GET /analytics — usage/performance stats scoped
+    entirely to the current user.
+    """
+
+    total_documents: int = Field(..., description="Number of documents currently uploaded by this user.")
+    total_queries: int = Field(..., description="Total number of questions this user has asked.")
+    success_rate: float = Field(
+        ..., description="Percentage (0-100) of this user's queries that were answered from a source."
+    )
+    avg_response_time: float = Field(
+        ..., description="This user's average end-to-end /chat/ask response time, in seconds."
+    )
+    queries_over_time: List[QueryCountByDate] = Field(
+        ..., description="One entry per day for the last 30 days, oldest first, zero-filled."
+    )
+    most_queried_documents: List[DocumentQueryCount] = Field(
+        ..., description="Top 5 documents by citation frequency, most-cited first."
+    )
+    recent_conversations: List[RecentConversation] = Field(
+        ..., description="The 10 most recent Q&A turns, newest first."
+    )

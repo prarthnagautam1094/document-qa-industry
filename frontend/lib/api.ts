@@ -14,6 +14,7 @@
 
 import { supabase } from "./supabase";
 import type {
+  AnalyticsResponse,
   ChatRequest,
   ChatResponse,
   DeleteResponse,
@@ -123,4 +124,8 @@ export async function askQuestion(payload: ChatRequest): Promise<ChatResponse> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+}
+
+export async function fetchAnalytics(signal?: AbortSignal): Promise<AnalyticsResponse> {
+  return request<AnalyticsResponse>("/analytics", { signal });
 }
