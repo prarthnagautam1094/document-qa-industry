@@ -448,11 +448,18 @@ def generate_answer(
     source_type is derived from whichever tool(s) were actually called,
     not from a prediction made before retrieval happened.
 
-    Raises on an LLM failure during the tool-calling loop (the router
-    maps that to a 500); finding nothing from either source is not an
-    error and instead returns a fixed fallback message with no sources
-    and num_chunks_retrieved=0 — the router uses that zero to log the
-    turn as unanswered in query_logs without needing to string-match the
+    A single tool-call turn's retries being exhausted (see
+    _invoke_with_tool_retry) does not fail the whole request — it's
+    treated the same as the model deciding to stop calling tools,
+    answering from whatever was already gathered rather than 500ing over
+    what's usually a transient, non-deterministic Groq/Llama hiccup on
+    one turn. Only a failure with *nothing at all* gathered yet (or a
+    non-Groq-tool-call error) still propagates, since there'd be nothing
+    to answer from either way — the router maps that to a 500.
+    Finding nothing from either source is not an error and instead
+    returns a fixed fallback message with no sources and
+    num_chunks_retrieved=0 — the router uses that zero to log the turn
+    as unanswered in query_logs without needing to string-match the
     fallback text.
     """
     search_query = rewrite_query_standalone(question, history)
@@ -473,7 +480,25 @@ def generate_answer(
     llm_for_next_turn = llm_required
     ai_message = None
     for _ in range(settings.MAX_TOOL_ITERATIONS):
-        ai_message = _invoke_with_tool_retry(llm_for_next_turn, messages)
+        try:
+            ai_message = _invoke_with_tool_retry(llm_for_next_turn, messages)
+        except groq.BadRequestError:
+            # Every retry for *this turn's* tool-call generation failed —
+            # a non-deterministic Groq/Llama quirk (see
+            # _invoke_with_tool_retry's docstring), not evidence the
+            # request itself is invalid. Whatever was gathered from
+            # earlier turns (if any) is still perfectly good; stop asking
+            # for more tool calls and fall through to synthesizing an
+            # answer from that, the same as if the model had simply
+            # decided on its own to stop here.
+            logger.warning(
+                "Exhausted tool-call retries mid-conversation; answering "
+                "from whatever was gathered so far instead of failing "
+                "the request",
+                exc_info=True,
+            )
+            ai_message = None
+            break
         messages.append(ai_message)
         if not ai_message.tool_calls:
             break
@@ -487,13 +512,35 @@ def generate_answer(
             messages.append(ToolMessage(content=result_text, tool_call_id=call["id"]))
         llm_for_next_turn = llm_auto  # only the first turn is forced
 
-    if ai_message.tool_calls:
-        # Hit the iteration cap while the model still wanted to call more
-        # tools — not expected in practice (MAX_TOOL_ITERATIONS covers
-        # "one tool" and "both tools" with a turn to spare), but if it
-        # happens, force a plain-text completion from whatever's been
-        # gathered so far rather than surfacing an incomplete message.
-        ai_message = llm.invoke(messages)
+    if ai_message is None or ai_message.tool_calls:
+        # Either the loop above broke early because retries were
+        # exhausted, or we hit the iteration cap while the model still
+        # wanted to call more tools (not expected in practice —
+        # MAX_TOOL_ITERATIONS covers "one tool" and "both tools" with a
+        # turn to spare) — either way, get a final answer from whatever's
+        # been gathered via a still-tools-bound LLM (llm_auto), not the
+        # bare `llm`: by this point `messages` may already contain prior
+        # AIMessages referencing search_documents/search_web by name, and
+        # Groq's API rejects any request whose `tools` list doesn't
+        # include every tool named anywhere in the message history, with
+        # "tool call validation failed: attempted to call tool '<name>'
+        # which was not in request.tools". A bare call here hit exactly
+        # that in production (tool_choice="auto" doesn't *force* another
+        # call, so this still reliably produces a final text answer
+        # rather than another tool_calls response).
+        try:
+            ai_message = llm_auto.invoke(messages)
+        except groq.BadRequestError:
+            # Even the final synthesis call hit the same quirk. We still
+            # have real retrieved content in `state` — see the fallback
+            # answer built from it below — just not an LLM-composed
+            # response weaving it together.
+            logger.warning(
+                "Final answer synthesis also hit the tool-call quirk; "
+                "falling back to a fixed message",
+                exc_info=True,
+            )
+            ai_message = None
 
     called = set(state.tools_called)
     if called == {"search_documents", "search_web"}:
@@ -525,4 +572,16 @@ def generate_answer(
             sources.append(label)
 
     num_results = len(state.doc_results) + len(state.web_results)
-    return ai_message.content, sources, num_results, source_type
+
+    if ai_message is None:
+        # The tool-call quirk hit even the final synthesis attempt above
+        # — real content was retrieved (state.doc_results/web_results,
+        # already reflected in `sources`), just without an LLM-composed
+        # answer weaving it together. Honest and short beats a 500 for
+        # what is, from the user's perspective, a transient hiccup rather
+        # than a real failure.
+        answer = "I found relevant information but had trouble composing a full answer just now — please try asking again."
+    else:
+        answer = ai_message.content
+
+    return answer, sources, num_results, source_type

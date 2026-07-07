@@ -88,13 +88,16 @@ class Settings:
     # Tool-calling loop tunables (see rag_service.generate_answer). 3
     # iterations comfortably covers "one tool" (1 turn) and "both tools"
     # (2 turns, plus one spare) without letting a stuck model loop
-    # indefinitely. 4 retries mitigates a documented Groq/Llama tool-
+    # indefinitely. 6 retries mitigates a documented Groq/Llama tool-
     # calling quirk where the model occasionally emits a malformed
     # function-call that Groq's API rejects with a 400 — non-deterministic
     # (temperature > 0), so a retry has a real chance of succeeding where
-    # the previous attempt didn't.
+    # the previous attempt didn't. Raised from 4 to 6 after a CI run hit
+    # this exact quirk on all 4 attempts for the "both" (document+web)
+    # path, which needs more tool-calling turns than a single-tool
+    # question and so has more chances to hit it per request.
     MAX_TOOL_ITERATIONS: int = 3
-    MAX_TOOL_CALL_RETRIES: int = 4
+    MAX_TOOL_CALL_RETRIES: int = 6
 
 
 settings = Settings()
