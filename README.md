@@ -149,6 +149,33 @@ npm run dev
 
 The app is now available at `http://localhost:3000`.
 
+### Docker (alternative to running each service manually)
+
+Once `backend/.env` and `frontend/.env.local` are filled in (see above), the
+whole stack can run as two containers instead of a local Python venv +
+`npm run dev`:
+
+```bash
+docker compose --env-file frontend/.env.local up --build
+```
+
+The `--env-file frontend/.env.local` part matters: Next.js inlines
+`NEXT_PUBLIC_*` variables into the client bundle at *build* time, so they're
+passed to the frontend image as Docker build args, substituted from that
+file — not from `env_file:` (which only affects the running container,
+too late for a value already baked into the JS bundle). Plain
+`docker compose up --build` still works, but the Supabase variables come
+through blank and the frontend falls back to its "not configured" warning.
+
+This starts:
+- the backend at `http://localhost:8001` (`/health`, `/docs`), with uploaded
+  documents' embeddings persisted in a named Docker volume across restarts
+- the frontend at `http://localhost:3000`, waiting on the backend's
+  healthcheck before starting
+
+Rebuild after a dependency change with `docker compose build`; tear down with
+`docker compose down` (add `-v` to also drop the persisted Chroma volume).
+
 ### Supabase configuration
 
 1. Create a Supabase project. Copy its Postgres connection string into `backend/.env` as `DATABASE_URL`, and its Project URL / anon key into both `backend/.env` (`SUPABASE_URL`, `SUPABASE_ANON_KEY`) and `frontend/.env.local` (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`).

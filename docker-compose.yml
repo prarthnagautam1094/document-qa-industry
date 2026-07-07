@@ -1,0 +1,65 @@
+# Local development / deployment stack for both services. Secrets and
+# config stay in the existing gitignored backend/.env and
+# frontend/.env.local — this file only *references* them, never embeds
+# a value directly.
+#
+# NEXT_PUBLIC_* variables are a special case: Next.js inlines them into
+# the client bundle at build time, so they can't be supplied via
+# frontend's env_file (that only affects the running container, too
+# late). They're passed as build args below, substituted from
+# frontend/.env.local — which means this file must be run with that path
+# as the compose env-file, not the (empty-by-default) top-level .env:
+#
+#   docker compose --env-file frontend/.env.local up --build
+#
+# (Plain `docker compose up --build` still works — the ${...:-default}
+# fallbacks below cover the local dev case where the backend is reached
+# at localhost:8001 — but the Supabase variables will be blank without
+# --env-file, and the frontend will warn about missing Supabase config.)
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8001:8001"
+    volumes:
+      # Named volume, not a bind mount: keeps uploaded documents'
+      # embeddings across `docker compose down`/`up` and container
+      # rebuilds, without tying the container to a host path.
+      - chroma_data:/app/chroma_db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # The browser (not the frontend container) is what actually
+        # calls this URL — every API call in lib/api.ts runs client-side
+        # — so it must be host-reachable (localhost:8001, the backend's
+        # published port), never the Docker-internal service name
+        # "backend", which the browser can't resolve.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+    env_file:
+      - ./frontend/.env.local
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  chroma_data:

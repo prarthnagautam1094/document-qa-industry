@@ -1,0 +1,16 @@
+venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+chroma_db/
+tests/
+
+# Secrets are passed via environment variables at container runtime
+# (see docker-compose.yml's env_file), never baked into the image.
+.env
+.env.*
+!.env.example
+
+.git/
+.claude/
