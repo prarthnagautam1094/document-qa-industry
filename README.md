@@ -1,5 +1,8 @@
 # Document Q&A
 
+[![Backend CI](https://github.com/prarthnagautam1094/document-qa-industry/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/prarthnagautam1094/document-qa-industry/actions/workflows/backend-ci.yml)
+[![Frontend CI](https://github.com/prarthnagautam1094/document-qa-industry/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/prarthnagautam1094/document-qa-industry/actions/workflows/frontend-ci.yml)
+
 A multi-user, retrieval-augmented Q&A application for PDF documents. Upload
 PDFs, ask questions grounded in their content, and get cited answers — with
 each signed-in user's documents and chat history fully isolated from every
@@ -192,6 +195,23 @@ pytest
 The suite runs real integration tests against the configured Chroma store, Postgres database, and Groq API (no mocks) — retrieval thresholds, prompt behavior, and chunking are exactly the things a mocked test would hide. The `get_current_user` auth dependency is overridden with a fixed test user id for most tests (see `tests/conftest.py`); `tests/test_auth.py` specifically exercises the real 401 behavior.
 
 There is also a separate RAG-quality evaluation harness (faithfulness, answer relevancy, context precision/recall via `ragas`) at `backend/evaluation/run_eval.py`.
+
+## CI/CD
+
+Two GitHub Actions workflows run on every push/PR to `main`:
+
+- **[Backend CI](.github/workflows/backend-ci.yml)** — installs `backend/requirements.txt` and runs the real pytest suite. Because that suite hits live Chroma, Postgres, Groq, and Supabase Auth rather than mocks (see "Running tests" above), it needs these **repository secrets** (Settings → Secrets and variables → Actions):
+
+  | Secret | Value |
+  |---|---|
+  | `GROQ_API_KEY` | Same value as `backend/.env` |
+  | `DATABASE_URL` | Same value as `backend/.env` |
+  | `SUPABASE_URL` | Same value as `backend/.env` |
+  | `SUPABASE_ANON_KEY` | Same value as `backend/.env` |
+
+  Without all four set, the workflow fails on the first Supabase- or database-dependent test rather than being skipped. Since the tests place real calls against Groq and the hosted Postgres instance, a run can also fail from an external rate limit or outage, not just a code regression.
+
+- **[Frontend CI](.github/workflows/frontend-ci.yml)** — runs `npm run lint` and `npm run build` (which type-checks as part of the build). No secrets required — `NEXT_PUBLIC_*` values only need to be well-formed strings for the build to succeed, so the workflow uses harmless placeholders instead of real Supabase config.
 
 ## License
 

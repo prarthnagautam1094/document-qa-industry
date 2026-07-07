@@ -1,0 +1,46 @@
+name: Frontend CI
+
+# Lints and builds the Next.js app (`next build` runs the TypeScript
+# compiler as part of the build, so a type error fails this step the same
+# as a build error). No repo secrets are needed here: NEXT_PUBLIC_* values
+# only need to be well-formed strings for the build to succeed (they're
+# inlined into the client bundle, never read/validated at build time), so
+# harmless placeholders are used below instead of real Supabase config.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (type-checks as part of `next build`)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8001
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
