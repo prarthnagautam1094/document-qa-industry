@@ -73,6 +73,17 @@ users.
 - **Query analytics** — per-user aggregate stats (total queries, average response time, success rate).
 - **Offline-aware UI** — the frontend detects when the backend is unreachable and shows a clear reconnect state instead of a silently broken app.
 
+## Screenshots
+
+![Chat interface](screenshots/chat-interface.png)
+*The initial chat view, ready for a question.*
+
+![Chat answer with citations](screenshots/chat-answer-with-citations.png)
+*A grounded answer with source citations back to the uploaded PDF.*
+
+![Analytics dashboard](screenshots/analytics-dashboard.png)
+*Usage stats and charts on the analytics dashboard.*
+
 ## Tech stack
 
 **Backend**
